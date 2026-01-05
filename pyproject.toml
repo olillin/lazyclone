@@ -3,5 +3,26 @@ name = "lazyclone"
 version = "0.1.0"
 description = "Git clone but easier"
 readme = "README.md"
+license = { file = 'LICENSE' }
+authors = [{ name = 'Oli', email = 'oli@olillin.com' }]
+maintainers = [{ name = 'Oli', email = 'oli@olillin.com' }]
+
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+ "colorama>=0.4.6",
+ 'inquirer',
+]
+
+[project.urls]
+"Bug Reports" = "https://github.com/olillin/lazyclone/issues"
+"Source" = "https://github.com/olillin/lazyclone"
+
+[project.scripts]
+lazyclone = 'lazyclone:main'
+
+[build-system]
+requires = ['hatchling']
+build-backend = 'hatchling.build'
+
+[tool.hatch.envs.default]
+installer = "uv"

@@ -17,6 +17,7 @@
         builtins.concatLists [
           [
             python313
+            ruff
             uv
           ]
         ];
