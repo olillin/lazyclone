@@ -67,6 +67,7 @@
           packages = [
             virtualenv
             pkgs.uv
+            pkgs.ruff
           ];
           env = {
             UV_NO_SYNC = "1";

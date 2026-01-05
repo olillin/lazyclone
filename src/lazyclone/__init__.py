@@ -1,8 +1,9 @@
 import argparse
 import sys
-from .clone import *
+from .repository import *
 from .console import *
 from .program import *
+
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -33,19 +34,20 @@ def main():
     repo = args.repo
     directory = args.directory
     program = args.program
-    console.log("[blue][DEBUG]",repo,directory,program)
+    console.log("[blue][DEBUG]", repo, directory, program)
 
     cloned_dir = lazy_clone(repo, directory)
     if cloned_dir is None:
         return
 
-    console.print(f'[green]Successfully cloned {cloned_dir}')
+    console.print(f"[green]Successfully cloned {cloned_dir}")
     if program is not None:
         console.print(f"[plum1]Launching {program}...")
         error = run_program(program, cloned_dir)
         if error is not None:
-            errors.print(f'Failed to launch program: {program} does not exist')
+            errors.print(f"Failed to launch program: {program} does not exist")
             sys.exit(2)
+
 
 if __name__ == "__main__":
     main()
