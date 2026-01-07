@@ -30,6 +30,15 @@ $ lazyclone lazy
    aFarkas/lazysizes
 ```
 
+You can even tell lazyvim to immediately open your favorite editor after cloning:
+
+```console
+$ lazyclone bonk --program nvim
+Cloning https://github.com/olillin/bonk
+Successfully cloned into 'bonk'
+Launching nvim...
+```
+
 See [Usage](#usage) for more details.
 
 ## Installation
