@@ -8,6 +8,8 @@ from .git import github_username, github_repositories, clone as git_clone
 def choose_repository(choices: list[str]) -> str:
     if len(choices) == 0:
         raise Exception("No repositories to choose from")
+    elif len(choices) == 1:
+        return choices[0]
 
     question = inq.List("repo", message="Select repository to clone", choices=choices)
     answers = inq.prompt([question])
