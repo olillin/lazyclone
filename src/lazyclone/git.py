@@ -1,12 +1,41 @@
 import subprocess
 import platform
+import math
 from .console import *
 
 use_shell = platform.system() == "Windows"
 
 
+def _find_clone_output(stdout: str) -> str:
+    """Find the output directory from the stdout of git clone"""
+    first_line = stdout[: stdout.index("\n")].strip()
+    quote_start = first_line.index("'") + 1
+    quote_end = first_line.rindex("'")
+    name = first_line[quote_start:quote_end]
+    return name
+
+
 def clone(url: str, output: str | None) -> str:
-    return output or url
+    """Clone a git repository"""
+    args = ["git", "clone", url]
+    if output is not None:
+        args.append(output)
+
+    process = subprocess.run(
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=use_shell
+    )
+
+    if process.returncode != 0:
+        if process.stderr is None:
+            raise Exception("Failed to clone git repository")
+        else:
+            message = process.stderr.decode()
+            raise Exception(
+                f"Failed to clone git repository: {process.stderr.decode()}"
+            )
+
+    output = process.stderr.decode()
+    return _find_clone_output(output)
 
 
 def github_username() -> str | None:
@@ -18,13 +47,13 @@ def github_username() -> str | None:
         shell=use_shell,
     )
 
-    if process.stdout is None:
+    if process.returncode != 0 or process.stdout is None:
         # Unable to get username
         return None
     return process.stdout.decode().strip()
 
 
-def github_repositories(query: str, owner: str | None) -> list[str]:
+def github_repositories(query: str, owner: str | None, limit: int = 6) -> list[str]:
     repositories: list[str] = []
 
     def get_names(stdout: str) -> list[str]:
@@ -42,7 +71,7 @@ def github_repositories(query: str, owner: str | None) -> list[str]:
                 "-f",
                 f"q={query} owner:{owner} fork:true",
                 "-f",
-                "per_page=10",
+                "per_page={math.ceil(limit / 2)}",
                 "-q",
                 ".items[]|.full_name",
             ],
@@ -56,6 +85,11 @@ def github_repositories(query: str, owner: str | None) -> list[str]:
             repositories.extend(names)
 
     # Get repositories from all of GitHub
+    remaining_limit = limit - len(repositories)
+    if remaining_limit <= 0:
+        return repositories
+
+    console.log(f"[blue][DEBUG] Searching for {remaining_limit} remaining repositories")
     all_process = subprocess.run(
         [
             "gh",
@@ -66,7 +100,7 @@ def github_repositories(query: str, owner: str | None) -> list[str]:
             "-f",
             f"q={query} fork:true",
             "-f",
-            "per_page=10",
+            "per_page={remaining_limit}",
             "-q",
             ".items[]|.full_name",
         ],
@@ -75,7 +109,7 @@ def github_repositories(query: str, owner: str | None) -> list[str]:
         shell=use_shell,
     )
     if all_process.stdout is not None:
-        names = get_names(all_process.stdout.decode())
+        names = get_names(all_process.stdout.decode())[:remaining_limit]
         console.log(f"[blue][DEBUG] All repos {names}")
         for name in names:
             if name not in repositories:

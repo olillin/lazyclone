@@ -36,11 +36,16 @@ def main():
     program = args.program
     console.log("[blue][DEBUG]", repo, directory, program)
 
-    cloned_dir = lazy_clone(repo, directory)
+    try:
+        cloned_dir = lazy_clone(repo, directory)
+    except Exception as e:
+        errors.print(e)
+        sys.exit(1)
+
     if cloned_dir is None:
         return
 
-    console.print(f"[green]Successfully cloned {cloned_dir}")
+    console.print(f"[green]Successfully cloned into '{cloned_dir}'")
     if program is not None:
         console.print(f"[plum1]Launching {program}...")
         error = run_program(program, cloned_dir)
