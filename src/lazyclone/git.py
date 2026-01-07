@@ -1,6 +1,5 @@
 import subprocess
 import platform
-import math
 from .console import *
 
 use_shell = platform.system() == "Windows"
@@ -38,81 +37,14 @@ def clone(url: str, output: str | None) -> str:
     return _find_clone_output(output)
 
 
-def github_username() -> str | None:
-    """Get the GitHub username of the logged in user using the `gh` CLI. Returns None if it failed"""
+def check_repository_exists(url: str) -> bool:
+    """Check if a git remote exists"""
+    debug.log(f"Checking if {url} exists")
+
+    args = ["git", "ls-remote", "-q", "--exit-code", url]
     process = subprocess.run(
-        ["gh", "api", "https://api.github.com/user", "--jq", ".login"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=use_shell,
+        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=use_shell
     )
-
-    if process.returncode != 0 or process.stdout is None:
-        # Unable to get username
-        return None
-    return process.stdout.decode().strip()
-
-
-def github_repositories(query: str, owner: str | None, limit: int = 6) -> list[str]:
-    repositories: list[str] = []
-
-    def get_names(stdout: str) -> list[str]:
-        return [line.strip() for line in stdout.split("\n") if line.strip() != ""]
-
-    if owner is not None:
-        # Get repositories owned by the specified owner
-        user_process = subprocess.run(
-            [
-                "gh",
-                "api",
-                "search/repositories",
-                "--method",
-                "GET",
-                "-f",
-                f"q={query} owner:{owner} fork:true",
-                "-f",
-                "per_page={math.ceil(limit / 2)}",
-                "-q",
-                ".items[]|.full_name",
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=use_shell,
-        )
-        if user_process.stdout is not None:
-            names = get_names(user_process.stdout.decode())
-            debug.log(f"User repos {names}")
-            repositories.extend(names)
-
-    # Get repositories from all of GitHub
-    remaining_limit = limit - len(repositories)
-    if remaining_limit <= 0:
-        return repositories
-
-    debug.log(f"Searching for {remaining_limit} remaining repositories")
-    all_process = subprocess.run(
-        [
-            "gh",
-            "api",
-            "search/repositories",
-            "--method",
-            "GET",
-            "-f",
-            f"q={query} fork:true",
-            "-f",
-            "per_page={remaining_limit}",
-            "-q",
-            ".items[]|.full_name",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=use_shell,
-    )
-    if all_process.stdout is not None:
-        names = get_names(all_process.stdout.decode())[:remaining_limit]
-        debug.log(f"All repos {names}")
-        for name in names:
-            if name not in repositories:
-                repositories.append(name)
-
-    return repositories
+    exists = process.returncode == 0
+    debug.log(f"Repo exists ({url}): {exists}")
+    return exists

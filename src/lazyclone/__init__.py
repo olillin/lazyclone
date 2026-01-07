@@ -48,6 +48,9 @@ def main():
 
     try:
         cloned_dir = lazy_clone(repo, directory)
+    except KeyboardInterrupt as e:
+        console.print(f"[red]Cancelled")
+        sys.exit(0)
     except Exception as e:
         errors.print(e)
         sys.exit(1)
@@ -65,4 +68,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        console.print(f"[red]Cancelled")

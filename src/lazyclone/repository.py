@@ -1,8 +1,9 @@
 import re
-import platform
 import inquirer as inq
+import requests
 from .console import *
-from .git import github_username, github_repositories, clone as git_clone
+from .git import clone as git_clone, check_repository_exists
+from .github import github_username, github_repositories
 
 
 def choose_repository(choices: list[str]) -> str:
@@ -19,33 +20,43 @@ def choose_repository(choices: list[str]) -> str:
     return answers["repo"]
 
 
-def find_repo_choices(repo: str) -> list[str]:
-    username = github_username()
-    debug.log(f"GitHub username: {username}")
-    return github_repositories(repo, username)
+def find_repo_choices(repo: str, owner: str | None = None) -> list[str]:
+    if owner is None:
+        owner = github_username()
+    debug.log(f"Searching for repos with owner: {owner}")
+    return github_repositories(repo, owner)
 
 
 def resolve_repo(repo: str) -> str:
-    choices: list[str] = find_repo_choices(repo)
+    # Don't resolve already completed URLs
+    if "://" in repo or "@" in repo:
+        return repo
 
-    debug.log(f"Choosing between: {choices}")
-    return "https://github.com/" + choose_repository(choices)
-
-    # Resolve repository name only
-    if re.match("^[a-zA-Z0-9._-]+$", repo):
+    # Try to add GitHub username if no owner is specified
+    if "/" not in repo:
         username = github_username()
-        if username is None:
-            raise Exception("Failed to get GitHub username")
-
-        url = "https://github.com/" + username + "/" + repo
-        return url
+        if username is not None:
+            repo = username + "/" + repo
 
     # Resolve repository owner and name
     if re.match("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repo):
         url = "https://github.com/" + repo
-        return url
+        if check_repository_exists(url):
+            return url
 
-    raise Exception("Unable to resolve repository")
+    # Use GitHub search as fallback
+    divider: int = repo.find("/")
+    owner: str | None
+    if divider > -1:
+        owner = repo[:divider]
+        repo = repo[divider + 1 :]
+    else:
+        owner = None
+
+    choices: list[str] = find_repo_choices(repo, owner)
+
+    debug.log(f"Choosing between: {choices}")
+    return "https://github.com/" + choose_repository(choices)
 
 
 def get_repo_name(url: str) -> str:
