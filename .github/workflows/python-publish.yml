@@ -9,8 +9,11 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
 
 permissions:
   contents: read
@@ -51,7 +54,7 @@ jobs:
     # For more information, see: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment#deployment-protection-rules
     environment:
       name: pypi
-      url: https://pypi.org/project/lazyclone/${{ github.event.release.name }}
+      url: https://pypi.org/project/lazyclone/${{ github.ref_name }}
 
     steps:
       - name: Retrieve release distributions
