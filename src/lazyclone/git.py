@@ -81,7 +81,7 @@ def github_repositories(query: str, owner: str | None, limit: int = 6) -> list[s
         )
         if user_process.stdout is not None:
             names = get_names(user_process.stdout.decode())
-            console.log(f"[blue][DEBUG] User repos {names}")
+            debug.log(f"User repos {names}")
             repositories.extend(names)
 
     # Get repositories from all of GitHub
@@ -89,7 +89,7 @@ def github_repositories(query: str, owner: str | None, limit: int = 6) -> list[s
     if remaining_limit <= 0:
         return repositories
 
-    console.log(f"[blue][DEBUG] Searching for {remaining_limit} remaining repositories")
+    debug.log(f"Searching for {remaining_limit} remaining repositories")
     all_process = subprocess.run(
         [
             "gh",
@@ -110,7 +110,7 @@ def github_repositories(query: str, owner: str | None, limit: int = 6) -> list[s
     )
     if all_process.stdout is not None:
         names = get_names(all_process.stdout.decode())[:remaining_limit]
-        console.log(f"[blue][DEBUG] All repos {names}")
+        debug.log(f"All repos {names}")
         for name in names:
             if name not in repositories:
                 repositories.append(name)

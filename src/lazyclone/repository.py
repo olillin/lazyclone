@@ -19,14 +19,14 @@ def choose_repository(choices: list[str]) -> str:
 
 def find_repo_choices(repo: str) -> list[str]:
     username = github_username()
-    console.log(f"[blue][DEBUG] GitHub username: {username}")
+    debug.log(f"GitHub username: {username}")
     return github_repositories(repo, username)
 
 
 def resolve_repo(repo: str) -> str:
     choices: list[str] = find_repo_choices(repo)
 
-    console.log(f"[blue][DEBUG] Choosing between: {choices}")
+    debug.log(f"Choosing between: {choices}")
     return "https://github.com/" + choose_repository(choices)
 
     # Resolve repository name only
@@ -55,7 +55,7 @@ def get_repo_name(url: str) -> str:
 
 def lazy_clone(repo: str, directory: str | None) -> str:
     url = resolve_repo(repo)
-    console.log(f"[blue][DEBUG] Resolved URL to {url}")
+    debug.log(f"Resolved URL to {url}")
     console.print(f"Cloning [yellow]{url}")
     output = git_clone(url, directory)
     return output

@@ -24,17 +24,27 @@ def parse_arguments() -> argparse.Namespace:
         "--program",
         help="open with this program after cloning",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="enable debugging output",
+    )
 
     return parser.parse_args()
 
 
 def main():
+    # Parse arguments
     args = parse_arguments()
-
     repo = args.repo
     directory = args.directory
     program = args.program
-    console.log("[blue][DEBUG]", repo, directory, program)
+
+    # Enable debugging
+    enable_debug = args.debug
+    set_debug(enable_debug)
+
+    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program)
 
     try:
         cloned_dir = lazy_clone(repo, directory)
