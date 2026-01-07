@@ -9,7 +9,8 @@ $ lazyclone olillin/lazyclone
 Cloning https://github.com/olillin/lazyclone
 ```
 
-If [GitHub CLI](https://cli.github.com) is installed lazyclone will detect your GitHub username:
+If [GitHub CLI](https://cli.github.com) is installed lazyclone will detect your
+GitHub username:
 
 ```console
 $ lazyclone bonk
@@ -18,7 +19,7 @@ Cloning https://github.com/olillin/bonk
 
 If there are multiple options you will be able to choose which repository to clone:
 
-```
+```console
 $ lazyclone lazy
 [?] Select repository to clone: 
  > olillin/lazyclone
@@ -50,6 +51,7 @@ pip install lazyclone
 Add the required inputs to your flake configuration:
 
 `flake.nix`
+
 ```nix
 {
   description = "NixOS configuration with lazyclone";
@@ -81,7 +83,8 @@ Add the required inputs to your flake configuration:
 Install the package in your `configuration.nix` or an imported module:
 
 `configuration.nix`
-```
+
+```nix
 {
   pkgs,
   inputs,
@@ -98,7 +101,7 @@ Install the package in your `configuration.nix` or an imported module:
 ### Arguments
 
 | Argument         | Type   | Description                                  | Example value       |
-|-------------     |--------|----------------------------------------------|---------------------|
+|------------------|--------|----------------------------------------------|---------------------|
 | `repo`           | string | Name or query of the repository to clone     | `olillin/lazyclone` |
 | `directory`      | string | Directory the repository should be cloned to | `lazyclone-2`       |
 | `-h`/`--help`    | flag   | Show the help menu                           |                     |

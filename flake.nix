@@ -64,11 +64,13 @@
         virtualenv = pythonSet.mkVirtualEnv "lazyclone-dev-env" workspace.deps.all;
       in {
         default = pkgs.mkShell {
-          packages = [
-            virtualenv
-            pkgs.uv
-            pkgs.ruff
-          ];
+          packages =
+            [virtualenv]
+            ++ (with pkgs; [
+              uv
+              ruff
+              markdownlint-cli
+            ]);
           env = {
             UV_NO_SYNC = "1";
             UV_PYTHON = pythonSet.python.interpreter;
