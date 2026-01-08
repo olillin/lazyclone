@@ -38,6 +38,12 @@ def resolve_repo(repo: str) -> str:
         if username is not None:
             repo = username + "/" + repo
 
+    # Assume https:// if it is a URL with no protocol specified
+    if "/" in repo and "." in repo.split("/")[0]:
+        url = "https://" + repo
+        if check_repository_exists(url):
+            return url
+
     # Resolve repository owner and name
     if re.match("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repo):
         url = "https://github.com/" + repo
@@ -45,11 +51,9 @@ def resolve_repo(repo: str) -> str:
             return url
 
     # Use GitHub search as fallback
-    divider: int = repo.find("/")
     owner: str | None
-    if divider > -1:
-        owner = repo[:divider]
-        repo = repo[divider + 1 :]
+    if "/" in repo:
+        owner, repo = repo.split("/", maxsplit=1)
     else:
         owner = None
 
