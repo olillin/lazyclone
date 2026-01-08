@@ -5,6 +5,14 @@ from .console import *
 from .git import clone as git_clone, check_repository_exists
 from .github import github_username, github_repositories
 
+# Prefixes from Nix Flakes URL-like syntax
+# See: https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#flake-references
+FLAKE_PREFIXES = {
+    "github": "https://github.com/",
+    "gitlab": "https://gitlab.com/",
+    "sourcehut": "https://git.sr.ht/~",
+}
+FLAKE_GIT_PREFIX = "git+"
 
 def choose_repository(choices: list[str]) -> str:
     if len(choices) == 0:
@@ -30,6 +38,8 @@ def find_repo_choices(repo: str, owner: str | None = None) -> list[str]:
 def resolve_repo(repo: str) -> str:
     # Don't resolve already completed URLs
     if "://" in repo or "@" in repo:
+        if repo.startswith(FLAKE_GIT_PREFIX):
+            return repo[len(FLAKE_GIT_PREFIX):]
         return repo
 
     # Try to add GitHub username if no owner is specified
@@ -37,6 +47,14 @@ def resolve_repo(repo: str) -> str:
         username = github_username()
         if username is not None:
             repo = username + "/" + repo
+
+    # Resolve Nix Flake-like URLs
+    if ":" in repo:
+        for key, host in FLAKE_PREFIXES.items():
+            if repo.startswith(key + ":"):
+                url = host + repo[len(key) + 1 :]
+                if check_repository_exists(url):
+                    return url
 
     # Assume https:// if it is a URL with no protocol specified
     if "/" in repo and "." in repo.split("/")[0]:
