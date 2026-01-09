@@ -50,6 +50,40 @@ class TestRepositoryResolution(unittest.TestCase):
         result = resolve_repo("gitlab-org/gitlab-foss", host="https://gitlab.com")
         self.assertEqual(result, "https://gitlab.com/gitlab-org/gitlab-foss")
 
+    def test_ssh_shorthand(self):
+        # input: "@olillin/lazyclone"
+        # Should resolve to git@github.com:olillin/lazyclone
+        result = resolve_repo("@olillin/lazyclone")
+        self.assertEqual(result, "git@github.com:olillin/lazyclone")
+
+    def test_custom_host_ssh_shorthand(self):
+        # input: "@olillin/lazyclone" with host "https://gitlab.com"
+        result = resolve_repo("@olillin/lazyclone", host="https://gitlab.com")
+        self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
+
+    def test_git_prefixed_ssh_shorthand(self):
+        # input: "git@olillin/lazyclone"
+        result = resolve_repo("git@olillin/lazyclone")
+        self.assertEqual(result, "git@github.com:olillin/lazyclone")
+
+    def test_ssh_shorthand_flake_syntax(self):
+        # input: "@gitlab:olillin/lazyclone"
+        # Should resolve to git@gitlab.com:olillin/lazyclone
+        result = resolve_repo("@gitlab:olillin/lazyclone")
+        self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
+
+    def test_complete_ssh_url(self):
+        # input: "olillin@git.olillin.com:foo/bar"
+        result = resolve_repo("olillin@git.olillin.com:foo/bar")
+        self.assertEqual(result, "olillin@git.olillin.com:foo/bar")
+
+    def test_complete_ssh_url_with_port(self):
+        # input: "olillin@git.olillin.com:2222:foo/bar"
+        result = resolve_repo("olillin@git.olillin.com:2222:foo/bar")
+        self.assertEqual(result, "olillin@git.olillin.com:2222:foo/bar")
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
