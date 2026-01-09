@@ -44,5 +44,12 @@ class TestRepositoryResolution(unittest.TestCase):
          result = resolve_repo("sourcehut:emersion/mrsh")
          self.assertEqual(result, "https://git.sr.ht/~emersion/mrsh")
 
+    def test_custom_host(self):
+        # input: "gitlab-org/gitlab-foss", host="https://gitlab.com"
+        # Since we use check_repository_exists, we need a real repo.
+        result = resolve_repo("gitlab-org/gitlab-foss", host="https://gitlab.com")
+        self.assertEqual(result, "https://gitlab.com/gitlab-org/gitlab-foss")
+
+
 if __name__ == "__main__":
     unittest.main()

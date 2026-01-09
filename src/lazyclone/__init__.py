@@ -25,6 +25,11 @@ def parse_arguments() -> argparse.Namespace:
         help="open with this program after cloning",
     )
     parser.add_argument(
+        "--host",
+        help="default git provider to use (default: https://github.com)",
+        default="https://github.com",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
         help="enable debugging output",
@@ -39,15 +44,17 @@ def main():
     repo = args.repo
     directory = args.directory
     program = args.program
+    host = args.host
 
     # Enable debugging
     enable_debug = args.debug
     set_debug(enable_debug)
 
-    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program)
+    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program, "Host:", host)
 
     try:
-        cloned_dir = lazy_clone(repo, directory)
+        cloned_dir = lazy_clone(repo, directory, host)
+
     except KeyboardInterrupt as e:
         console.print(f"[red]Cancelled")
         sys.exit(0)

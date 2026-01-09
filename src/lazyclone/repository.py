@@ -35,7 +35,7 @@ def find_repo_choices(repo: str, owner: str | None = None) -> list[str]:
     return github_repositories(repo, owner)
 
 
-def resolve_repo(repo: str) -> str:
+def resolve_repo(repo: str, host: str = "https://github.com") -> str:
     # Don't resolve already completed URLs
     if "://" in repo or "@" in repo:
         if repo.startswith(FLAKE_GIT_PREFIX):
@@ -50,9 +50,9 @@ def resolve_repo(repo: str) -> str:
 
     # Resolve Nix Flake-like URLs
     if ":" in repo:
-        for key, host in FLAKE_PREFIXES.items():
+        for key, prefix in FLAKE_PREFIXES.items():
             if repo.startswith(key + ":"):
-                url = host + repo[len(key) + 1 :]
+                url = prefix + repo[len(key) + 1 :]
                 if check_repository_exists(url):
                     return url
 
@@ -64,7 +64,8 @@ def resolve_repo(repo: str) -> str:
 
     # Resolve repository owner and name
     if re.match("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repo):
-        url = "https://github.com/" + repo
+        base = host.rstrip("/") + "/"
+        url = base + repo
         if check_repository_exists(url):
             return url
 
@@ -88,8 +89,8 @@ def get_repo_name(url: str) -> str:
     return match.group(0)
 
 
-def lazy_clone(repo: str, directory: str | None) -> str:
-    url = resolve_repo(repo)
+def lazy_clone(repo: str, directory: str | None, host: str = "https://github.com") -> str:
+    url = resolve_repo(repo, host)
     debug.log(f"Resolved URL to {url}")
     console.print(f"Cloning [yellow]{url}")
     output = git_clone(url, directory)
