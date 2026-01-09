@@ -43,7 +43,9 @@ def build_url(path: str, host: str, ssh: bool = False) -> str:
         domain = host.split("://")[-1].rstrip("/")
         return f"git@{domain}:{path}"
     else:
-        return host + path
+        # If host already ends with a separator, don't add another one
+        separator = "" if host[-1] in ["/", "~"] else "/"
+        return host + separator + path.lstrip("/")
 
 def resolve_repo(repo: str, host: str = "https://github.com", default_ssh: bool = False) -> str:
     if "://" not in host:
@@ -52,7 +54,7 @@ def resolve_repo(repo: str, host: str = "https://github.com", default_ssh: bool 
     repo = repo.strip()
 
     # Don't resolve already completed URLs
-    if "://" in repo or "@" in repo and not repo.startswith("git@"):
+    if "://" in repo or (":" in repo and "@" in repo and not repo.startswith("@") and not repo.startswith("git@")):
         if repo.startswith(FLAKE_GIT_PREFIX):
             return repo[len(FLAKE_GIT_PREFIX):]
         return repo
