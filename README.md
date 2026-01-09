@@ -115,12 +115,15 @@ Install the package in your `configuration.nix` or an imported module:
 | `directory`      | string | Directory the repository should be cloned to | `lazyclone-2`       |
 | `-h`/`--help`    | flag   | Show the help menu                           |                     |
 | `-p`/`--program` | string | Program to open the cloned repository with   | `code`              |
+| `--host`         | string | URL for default git provider                 | `https://github.com`|
+| `--ssh`          | flag   | Prefer SSH over HTTPS                        |                     |
 | `--debug`        | flag   | Enable debug logs                            |                     |
 
 ### Help message
 
 ```console
-usage: lazyclone [-h] [-p PROGRAM] [--debug] repo [directory]
+usage: lazyclone [-h] [-p PROGRAM] [--host HOST] [--ssh] [--debug]
+                 repo [directory]
 
 Clone Git repositories easier
 
@@ -132,5 +135,7 @@ options:
   -h, --help            show this help message and exit
   -p, --program PROGRAM
                         open with this program after cloning
+  --host HOST           URL for default git host (default: https://github.com)
+  --ssh                 prefer ssh over https
   --debug               enable debugging output
 ```

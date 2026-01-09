@@ -26,8 +26,13 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--host",
-        help="default git provider to use (default: https://github.com)",
+        help="URL for default git host (default: https://github.com)",
         default="https://github.com",
+    )
+    parser.add_argument(
+        "--ssh",
+        action="store_true",
+        help="prefer ssh over https",
     )
     parser.add_argument(
         "--debug",
@@ -45,15 +50,16 @@ def main():
     directory = args.directory
     program = args.program
     host = args.host
+    ssh = args.ssh
 
     # Enable debugging
     enable_debug = args.debug
     set_debug(enable_debug)
 
-    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program, "Host:", host)
+    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program, "Host:", host, "SSH: ", ssh)
 
     try:
-        cloned_dir = lazy_clone(repo, directory, host)
+        cloned_dir = lazy_clone(repo, directory, host, default_ssh=ssh)
 
     except KeyboardInterrupt as e:
         console.print(f"[red]Cancelled")
