@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  uv-build:
 
     runs-on: ubuntu-latest
 
@@ -42,3 +42,15 @@ jobs:
     - name: Test
       run: |
         python -m unittest discover tests
+
+  nix-build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: determinate-systems/nix-installer-action@v16
+
+    - name: Build with Nix
+      run: nix build
