@@ -72,7 +72,7 @@
               markdownlint-cli
             ])
             ++ (with pkgs.python313Packages; [
-              colorama
+              rich
               inquirer
             ]);
           env = {
