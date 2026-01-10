@@ -1,7 +1,6 @@
 import re
 import inquirer as inq
-import requests
-from .console import *
+from .console import console, debug
 from .git import clone as git_clone, check_repository_exists
 from .github import github_username, github_repositories
 
@@ -13,6 +12,7 @@ FLAKE_PREFIXES = {
     "sourcehut": "https://git.sr.ht/~",
 }
 FLAKE_GIT_PREFIX = "git+"
+
 
 def choose_repository(choices: list[str]) -> str:
     if len(choices) == 0:
@@ -34,6 +34,7 @@ def find_repo_choices(repo: str, owner: str | None = None) -> list[str]:
     debug.log(f"Searching for repos with owner: {owner}")
     return github_repositories(repo, owner)
 
+
 def build_url(path: str, host: str, ssh: bool = False) -> str:
     """Build a URL from a path and a host"""
     if "://" not in host:
@@ -47,16 +48,24 @@ def build_url(path: str, host: str, ssh: bool = False) -> str:
         separator = "" if host[-1] in ["/", "~"] else "/"
         return host + separator + path.lstrip("/")
 
-def resolve_repo(repo: str, host: str = "https://github.com", default_ssh: bool = False) -> str:
+
+def resolve_repo(
+    repo: str, host: str = "https://github.com", default_ssh: bool = False
+) -> str:
     if "://" not in host:
         raise Exception("Host must be a valid URL")
     host = host.rstrip("/").strip()
     repo = repo.strip()
 
     # Don't resolve already completed URLs
-    if "://" in repo or (":" in repo and "@" in repo and not repo.startswith("@") and not repo.startswith("git@")):
+    if "://" in repo or (
+        ":" in repo
+        and "@" in repo
+        and not repo.startswith("@")
+        and not repo.startswith("git@")
+    ):
         if repo.startswith(FLAKE_GIT_PREFIX):
-            return repo[len(FLAKE_GIT_PREFIX):]
+            return repo[len(FLAKE_GIT_PREFIX) :]
         return repo
 
     # Resolve SSH shorthand
@@ -78,9 +87,11 @@ def resolve_repo(repo: str, host: str = "https://github.com", default_ssh: bool 
         for key, flake_host in FLAKE_PREFIXES.items():
             if not repo.startswith(key + ":"):
                 continue
-            path = repo[len(key) + 1:]
+            path = repo[len(key) + 1 :]
             url = build_url(path, host=flake_host, ssh=use_ssh)
             if not check_repository_exists(url):
+                # If flake resolution fails, strip prefix and try regular resolution/search
+                repo = path
                 break
             return url
 
@@ -119,7 +130,9 @@ def get_repo_name(url: str) -> str:
     return match.group(0)
 
 
-def lazy_clone(repo: str, directory: str | None, host: str = "https://github.com") -> str:
+def lazy_clone(
+    repo: str, directory: str | None, host: str = "https://github.com"
+) -> str:
     url = resolve_repo(repo, host)
     debug.log(f"Resolved URL to {url}")
     console.print(f"Cloning [yellow]{url}")

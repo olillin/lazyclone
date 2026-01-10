@@ -1,6 +1,6 @@
 import subprocess
 import platform
-from .console import *
+from .console import debug
 
 use_shell = platform.system() == "Windows"
 
@@ -29,9 +29,7 @@ def clone(url: str, output: str | None) -> str:
             raise Exception("Failed to clone git repository")
         else:
             message = process.stderr.decode()
-            raise Exception(
-                f"Failed to clone git repository: {process.stderr.decode()}"
-            )
+            raise Exception(f"Failed to clone git repository: {message}")
 
     output = process.stderr.decode()
     return _find_clone_output(output)

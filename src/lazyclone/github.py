@@ -1,7 +1,7 @@
 import subprocess
 import math
 import platform
-from .console import *
+from .console import debug
 
 use_shell = platform.system() == "Windows"
 
@@ -17,7 +17,7 @@ def github_username() -> str | None:
 
     if process.returncode != 0 or process.stdout is None:
         # Unable to get username
-        debug.log(f"Failed to get GitHub username")
+        debug.log("Failed to get GitHub username")
         if process.stderr:
             debug.log(process.stderr.decode())
         return None

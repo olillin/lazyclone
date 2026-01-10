@@ -1,5 +1,5 @@
 import os
-from .console import *
+from .console import debug
 
 
 def run_program(program: str, cloned_dir: str) -> str | None:

@@ -1,8 +1,8 @@
 import argparse
 import sys
-from .repository import *
-from .console import *
-from .program import *
+from .repository import lazy_clone
+from .console import console, debug, set_debug, errors
+from .program import run_program
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -56,13 +56,24 @@ def main():
     enable_debug = args.debug
     set_debug(enable_debug)
 
-    debug.log("Args:: Repo:", repo, "Output directory:", directory, "Program:", program, "Host:", host, "SSH: ", ssh)
+    debug.log(
+        "Args:: Repo:",
+        repo,
+        "Output directory:",
+        directory,
+        "Program:",
+        program,
+        "Host:",
+        host,
+        "SSH: ",
+        ssh,
+    )
 
     try:
         cloned_dir = lazy_clone(repo, directory, host, default_ssh=ssh)
 
-    except KeyboardInterrupt as e:
-        console.print(f"[red]Cancelled")
+    except KeyboardInterrupt:
+        console.print("[red]Cancelled")
         sys.exit(0)
     except Exception as e:
         errors.print(e)
@@ -84,4 +95,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        console.print(f"[red]Cancelled")
+        console.print("[red]Cancelled")

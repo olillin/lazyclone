@@ -1,6 +1,5 @@
-
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import sys
 import os
 
@@ -8,6 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
 from lazyclone.repository import resolve_repo
+
 
 class TestRepositoryResolution(unittest.TestCase):
     @patch("lazyclone.repository.check_repository_exists")
@@ -41,7 +41,7 @@ class TestRepositoryResolution(unittest.TestCase):
         # Should strip "git+" and return "https://..."
         result = resolve_repo("git+https://github.com/olillin/olillin")
         self.assertEqual(result, "https://github.com/olillin/olillin")
-    
+
     @patch("lazyclone.repository.check_repository_exists")
     def test_gitlab_flake(self, mock_check):
         mock_check.return_value = True
@@ -51,10 +51,10 @@ class TestRepositoryResolution(unittest.TestCase):
 
     @patch("lazyclone.repository.check_repository_exists")
     def test_sourcehut_flake(self, mock_check):
-         mock_check.return_value = True
-         # input: "sourcehut:emersion/mrsh"
-         result = resolve_repo("sourcehut:emersion/mrsh")
-         self.assertEqual(result, "https://git.sr.ht/~emersion/mrsh")
+        mock_check.return_value = True
+        # input: "sourcehut:emersion/mrsh"
+        result = resolve_repo("sourcehut:emersion/mrsh")
+        self.assertEqual(result, "https://git.sr.ht/~emersion/mrsh")
 
     @patch("lazyclone.repository.check_repository_exists")
     def test_custom_host(self, mock_check):
@@ -106,6 +106,42 @@ class TestRepositoryResolution(unittest.TestCase):
         # input: "olillin@git.olillin.com:2222:foo/bar"
         result = resolve_repo("olillin@git.olillin.com:2222:foo/bar")
         self.assertEqual(result, "olillin@git.olillin.com:2222:foo/bar")
+
+    @patch("lazyclone.repository.check_repository_exists")
+    @patch("lazyclone.repository.find_repo_choices")
+    @patch("lazyclone.repository.choose_repository")
+    def test_nonexistent_direct_fallback_search(
+        self, mock_choose, mock_find, mock_check
+    ):
+        # Case: owner/repo does not exist directly
+        mock_check.return_value = False
+        mock_find.return_value = ["suggested/repo"]
+        mock_choose.return_value = "suggested/repo"
+
+        result = resolve_repo("my/repo")
+
+        # Should have checked existence
+        mock_check.assert_called()
+        # Should have searched
+        mock_find.assert_called()
+        # Should return the chosen one from search (defaulting to GitHub)
+        self.assertEqual(result, "https://github.com/suggested/repo")
+
+    @patch("lazyclone.repository.check_repository_exists")
+    @patch("lazyclone.repository.find_repo_choices")
+    @patch("lazyclone.repository.choose_repository")
+    def test_nonexistent_flake_fallback(self, mock_choose, mock_find, mock_check):
+        # Case: github:owner/repo does not exist
+        mock_check.return_value = False
+        mock_find.return_value = ["found/repo"]
+        mock_choose.return_value = "found/repo"
+
+        result = resolve_repo("github:owner/repo")
+
+        # It should fall through to search
+        self.assertEqual(result, "https://github.com/found/repo")
+        # Check what it searched for - prefix should be stripped!
+        mock_find.assert_called_with("repo", "owner")
 
 
 if __name__ == "__main__":
