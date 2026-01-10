@@ -74,7 +74,6 @@
             ++ (with pkgs.python313Packages; [
               colorama
               inquirer
-              requests
             ]);
           env = {
             UV_NO_SYNC = "1";

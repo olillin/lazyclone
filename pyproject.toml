@@ -10,7 +10,6 @@ maintainers = [{ name = 'Oli', email = 'oli@olillin.com' }]
 requires-python = ">=3.13"
 dependencies = [
  "inquirer>=3.4.1",
- "requests>=2.32.5",
  "rich>=14.2.0",
 ]
 
