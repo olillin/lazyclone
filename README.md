@@ -1,5 +1,8 @@
 # lazyclone
 
+[![GitHub branch check runs](https://img.shields.io/github/check-runs/olillin/lazyclone/main?style=flat-square)](https://github.com/olillin/lazyclone/actions)
+[![PyPI - Version](https://img.shields.io/pypi/v/lazyclone?style=flat-square&logo=Python&logoColor=white)](https://pypi.org/project/lazyclone)
+
 Git clone but easier. Built as a replacement/improvement of my project, [clode](https://github.com/olillin/clode).
 
 Clone a repository without the full URL:
