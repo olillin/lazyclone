@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-10
+
+### Added
+
+- Links to commit history from changelog.
+- README badges.
+
+### Changed
+
+- CI will no longer publish on every push to the main branch.
+
+### Fixed
+
+- Error caused by incorrectly passing SSH argument.
+- Broken SSH repository resolution.
+
 ## [0.2.0] - 2026-01-10
 
 ### Added
@@ -38,4 +54,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.1.0]: https://github.com/olillin/lazyclone/commits/0.1.0
 [0.2.0]: https://github.com/olillin/lazyclone/compare/0.1.0...0.2.0
-[unreleased]: https://github.com/olillin/lazyclone/compare/0.2.0...dev
+[0.2.1]: https://github.com/olillin/lazyclone/compare/0.2.0...0.2.1
+[unreleased]: https://github.com/olillin/lazyclone/compare/0.2.1...dev
