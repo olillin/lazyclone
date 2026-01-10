@@ -35,14 +35,18 @@ def find_repo_choices(repo: str, owner: str | None = None) -> list[str]:
     return github_repositories(repo, owner)
 
 
-def build_url(path: str, host: str, ssh: bool = False) -> str:
+def build_url(
+    path: str, host: str, ssh: bool = False, ssh_prefix: str | None = None
+) -> str:
     """Build a URL from a path and a host"""
     if "://" not in host:
         raise Exception("Host must be a valid URL")
 
     if ssh:
         domain = host.split("://")[-1].rstrip("/")
-        return f"git@{domain}:{path}"
+        if ssh_prefix is None:
+            ssh_prefix = "git"
+        return f"{ssh_prefix}@{domain}:{path}"
     else:
         # If host already ends with a separator, don't add another one
         separator = "" if host[-1] in ["/", "~"] else "/"
@@ -57,22 +61,34 @@ def resolve_repo(
     host = host.rstrip("/").strip()
     repo = repo.strip()
 
+    # Strip ssh:// protocol
+    ssh_prefix: str | None = None
+    if repo.startswith("ssh://"):
+        ssh_prefix = "ssh://"
+        repo = repo[len("ssh://") :]
+    if user_match := re.match("[a-zA-Z0-9]+(?=@)", repo):
+        user = user_match.group(0)
+        if ssh_prefix:
+            ssh_prefix += user
+        else:
+            ssh_prefix = user
+        repo = repo[len(user) :]
+
     # Don't resolve already completed URLs
-    if "://" in repo or (
-        ":" in repo
-        and "@" in repo
-        and not repo.startswith("@")
-        and not repo.startswith("git@")
-    ):
+    elif re.match(f"^({FLAKE_GIT_PREFIX.replace('+', '\\+')})?https?://", repo):
         if repo.startswith(FLAKE_GIT_PREFIX):
             return repo[len(FLAKE_GIT_PREFIX) :]
         return repo
 
-    # Resolve SSH shorthand
+    # Resolve SSH prefix
     use_ssh: bool
-    if repo.startswith("@") or repo.startswith("git@"):
+    if repo.startswith("@") or repo.startswith("git@") or repo.startswith("ssh://"):
         use_ssh = True
         repo = repo.split("@", maxsplit=1)[1]
+
+        # Remove protocol if present
+        if "://" in repo:
+            repo = repo.split("://", maxsplit=1)[1]
     else:
         use_ssh = default_ssh
 
@@ -95,15 +111,22 @@ def resolve_repo(
                 break
             return url
 
-    # Assume https:// if it is a URL with no protocol specified
-    if "/" in repo and "." in repo.split("/")[0]:
-        url = "https://" + repo
+    # Try to build URL if domain is provided
+    if "." in repo and "/" in repo:
+        colon = re.search(":(?!\\d)", repo)
+        if colon:
+            domain, path = repo[: colon.start()], repo[colon.start() + 1 :]
+        else:
+            domain, path = repo.split("/", maxsplit=1)
+        url = build_url(
+            path, host="https://" + domain, ssh=use_ssh, ssh_prefix=ssh_prefix
+        )
         if check_repository_exists(url):
             return url
 
-    # Resolve repository owner and name
-    if re.match("^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repo):
-        url = build_url(repo, host=host, ssh=use_ssh)
+    # Try default host with owner and name
+    if re.match("[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$", repo):
+        url = build_url(repo, host=host, ssh=use_ssh, ssh_prefix=ssh_prefix)
         if check_repository_exists(url):
             return url
 
@@ -120,7 +143,9 @@ def resolve_repo(
     chosen_repository = choose_repository(choices)
     debug.log(f"Chosen repository: {chosen_repository}")
     github_host = "https://github.com"
-    return build_url(chosen_repository, host=github_host, ssh=use_ssh)
+    return build_url(
+        chosen_repository, host=github_host, ssh=use_ssh, ssh_prefix=ssh_prefix
+    )
 
 
 def get_repo_name(url: str) -> str:
@@ -131,7 +156,10 @@ def get_repo_name(url: str) -> str:
 
 
 def lazy_clone(
-        repo: str, directory: str | None, host: str = "https://github.com", default_ssh: bool = False
+    repo: str,
+    directory: str | None,
+    host: str = "https://github.com",
+    default_ssh: bool = False,
 ) -> str:
     url = resolve_repo(repo, host, default_ssh)
     debug.log(f"Resolved URL to {url}")

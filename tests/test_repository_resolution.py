@@ -11,6 +11,44 @@ from lazyclone.repository import resolve_repo
 
 class TestRepositoryResolution(unittest.TestCase):
     @patch("lazyclone.repository.check_repository_exists")
+    def test_complete_url(self, mock_check):
+        mock_check.return_value = True
+        # input: "https://github.com/olillin/olillin"
+        url = "https://github.com/olillin/olillin"
+        result = resolve_repo(url)
+        self.assertEqual(result, url)
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_complete_url_ssh(self, mock_check):
+        mock_check.return_value = True
+        # input: "git@github.com:olillin/olillin"
+        url = "git@github.com:olillin/olillin"
+        result = resolve_repo(url)
+        self.assertEqual(result, url)
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_complete_url_ssh_protocol(self, mock_check):
+        mock_check.return_value = True
+        # input: "ssh://git@github.com:olillin/olillin"
+        url = "ssh://git@github.com:olillin/olillin"
+        result = resolve_repo(url)
+        self.assertEqual(result, url)
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_complete_url_ssh_custom_user(self, mock_check):
+        mock_check.return_value = True
+        # input: "olillin@git.olillin.com:foo/bar"
+        result = resolve_repo("olillin@git.olillin.com:foo/bar")
+        self.assertEqual(result, "olillin@git.olillin.com:foo/bar")
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_complete_url_ssh_with_port(self, mock_check):
+        mock_check.return_value = True
+        # input: "olillin@git.olillin.com:2222:foo/bar"
+        result = resolve_repo("olillin@git.olillin.com:2222:foo/bar")
+        self.assertEqual(result, "olillin@git.olillin.com:2222:foo/bar")
+
+    @patch("lazyclone.repository.check_repository_exists")
     def test_github_implicit(self, mock_check):
         # input: "olillin/olillin"
         # Since this resolves via network check or github searching, we expect it to resolve to the full URL.
@@ -25,14 +63,6 @@ class TestRepositoryResolution(unittest.TestCase):
         # input: "github:olillin/olillin"
         result = resolve_repo("github:olillin/olillin")
         self.assertEqual(result, "https://github.com/olillin/olillin")
-
-    @patch("lazyclone.repository.check_repository_exists")
-    def test_direct_url(self, mock_check):
-        mock_check.return_value = True
-        # input: "https://github.com/olillin/olillin"
-        url = "https://github.com/olillin/olillin"
-        result = resolve_repo(url)
-        self.assertEqual(result, url)
 
     @patch("lazyclone.repository.check_repository_exists")
     def test_git_plus_prefix(self, mock_check):
@@ -72,11 +102,47 @@ class TestRepositoryResolution(unittest.TestCase):
         self.assertEqual(result, "git@github.com:olillin/lazyclone")
 
     @patch("lazyclone.repository.check_repository_exists")
+    def test_ssh_shorthand_with_domain(self, mock_check):
+        mock_check.return_value = True
+        # input: "@gitlab.com:olillin/lazyclone"
+        # Should resolve to git@gitlab.com:olillin/lazyclone
+        result = resolve_repo("@gitlab.com:olillin/lazyclone")
+        self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_ssh_shorthand_with_domain_slash(self, mock_check):
+        mock_check.return_value = True
+        # input: "@gitlab.com/olillin/lazyclone"
+        # Should resolve to git@gitlab.com:olillin/lazyclone
+        result = resolve_repo("@gitlab.com/olillin/lazyclone")
+        self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
+
+    @patch("lazyclone.repository.check_repository_exists")
+    def test_ssh_shorthand_translate_https(self, mock_check):
+        mock_check.return_value = True
+        # input: "@https://github.com/olillin/lazyclone"
+        # Should resolve to git@github.com:olillin/lazyclone
+        result = resolve_repo("@https://github.com/olillin/lazyclone")
+        self.assertEqual(result, "git@github.com:olillin/lazyclone")
+
+    @patch("lazyclone.repository.check_repository_exists")
     def test_custom_host_ssh_shorthand(self, mock_check):
         mock_check.return_value = True
         # input: "@olillin/lazyclone" with host "https://gitlab.com"
         result = resolve_repo("@olillin/lazyclone", host="https://gitlab.com")
         self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
+
+    @patch("lazyclone.github.github_username")
+    @patch("lazyclone.repository.find_repo_choices")
+    @patch("lazyclone.repository.choose_repository")
+    def test_ssh_shorthand_search(self, mock_choose, mock_find, mock_username):
+        mock_find.return_value = ["olillin/lazyclone"]
+        mock_choose.return_value = "olillin/lazyclone"
+        mock_username.return_value = None
+        # input: "@lazyclone"
+        # Should resolve to git@github.com:olillin/lazyclone
+        result = resolve_repo("@olillin/lazyclone")
+        self.assertEqual(result, "git@github.com:olillin/lazyclone")
 
     @patch("lazyclone.repository.check_repository_exists")
     def test_git_prefixed_ssh_shorthand(self, mock_check):
@@ -94,26 +160,10 @@ class TestRepositoryResolution(unittest.TestCase):
         self.assertEqual(result, "git@gitlab.com:olillin/lazyclone")
 
     @patch("lazyclone.repository.check_repository_exists")
-    def test_complete_ssh_url(self, mock_check):
-        mock_check.return_value = True
-        # input: "olillin@git.olillin.com:foo/bar"
-        result = resolve_repo("olillin@git.olillin.com:foo/bar")
-        self.assertEqual(result, "olillin@git.olillin.com:foo/bar")
-
-    @patch("lazyclone.repository.check_repository_exists")
-    def test_complete_ssh_url_with_port(self, mock_check):
-        mock_check.return_value = True
-        # input: "olillin@git.olillin.com:2222:foo/bar"
-        result = resolve_repo("olillin@git.olillin.com:2222:foo/bar")
-        self.assertEqual(result, "olillin@git.olillin.com:2222:foo/bar")
-
-    @patch("lazyclone.repository.check_repository_exists")
     @patch("lazyclone.repository.find_repo_choices")
     @patch("lazyclone.repository.choose_repository")
-    def test_nonexistent_direct_fallback_search(
-        self, mock_choose, mock_find, mock_check
-    ):
-        # Case: owner/repo does not exist directly
+    def test_nonexistent_fallback_search(self, mock_choose, mock_find, mock_check):
+        # Case: my/repo does not exist
         mock_check.return_value = False
         mock_find.return_value = ["suggested/repo"]
         mock_choose.return_value = "suggested/repo"
