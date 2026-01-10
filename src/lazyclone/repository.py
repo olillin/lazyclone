@@ -131,9 +131,9 @@ def get_repo_name(url: str) -> str:
 
 
 def lazy_clone(
-    repo: str, directory: str | None, host: str = "https://github.com"
+        repo: str, directory: str | None, host: str = "https://github.com", default_ssh: bool = False
 ) -> str:
-    url = resolve_repo(repo, host)
+    url = resolve_repo(repo, host, default_ssh)
     debug.log(f"Resolved URL to {url}")
     console.print(f"Cloning [yellow]{url}")
     output = git_clone(url, directory)
