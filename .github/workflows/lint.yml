@@ -1,0 +1,34 @@
+# Extra linting for Markdown, Nix, TOML and YAML files
+name: Linting
+on:
+  push:
+    paths:
+      - "**/*.toml"
+      - "**/*.yaml"
+      - "**/*.yml"
+      - "**/*.nix"
+      - "**/*.md"
+  pull_request:
+    paths:
+      - "**/*.toml"
+      - "**/*.yaml"
+      - "**/*.yml"
+      - "**/*.nix"
+      - "**/*.md"
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+      - name: Check TOML formatting
+        run: nix run nixpkgs#taplo -- fmt --check
+      - name: Check YAML formatting
+        run: nix run nixpkgs#yamlfmt -- -lint
+      - name: Check Nix formatting
+        run: nix run nixpkgs#alejandra -- --check .
+      - name: Check Markdown formatting
+        run: nix run nixpkgs#mdformat -- --check .

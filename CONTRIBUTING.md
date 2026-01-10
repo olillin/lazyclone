@@ -57,3 +57,11 @@ The resulting binary will be `./result/bin/lazyclone`.
 ```bash
 python -m unittest discover tests
 ```
+
+### Linting and Formatting
+
+To ensure a consistent code style, there are several formatters and linters installed as part of the Nix dev shell. You can run them all at once using the provided command (available in the Nix dev shell):
+
+```bash
+fmt
+```

@@ -62,14 +62,42 @@
         pkgs = nixpkgs.legacyPackages.${system};
         pythonSet = pythonSets.${system}.overrideScope editableOverlay;
         virtualenv = pythonSet.mkVirtualEnv "lazyclone-dev-env" workspace.deps.all;
+        fmt = pkgs.writeShellScriptBin "fmt" ''
+          set -e
+          echo "🎨 Running formatters and linters..."
+
+          echo "🐍 Running Ruff (Python)..."
+          ruff check . --fix
+          ruff format .
+
+          echo "📝 Running Taplo (TOML)..."
+          git ls-files --cached --others --exclude-standard '*.toml' | xargs -r taplo fmt
+
+          echo "❄️  Running Alejandra (Nix)..."
+          git ls-files --cached --others --exclude-standard '*.nix' | xargs -r alejandra
+
+          echo "📄 Running yamlfmt (YAML)..."
+          git ls-files --cached --others --exclude-standard '*.yaml' '*.yml' | xargs -r yamlfmt
+
+          echo "⬇️  Running mdformat (Markdown)..."
+          git ls-files --cached --others --exclude-standard '*.md' | xargs -r mdformat
+
+          echo "✅ All checks passed!"
+        '';
       in {
         default = pkgs.mkShell {
           packages =
-            [virtualenv]
+            [
+              virtualenv
+              fmt
+            ]
             ++ (with pkgs; [
               uv
               ruff
-              markdownlint-cli
+              taplo
+              alejandra
+              yamlfmt
+              mdformat
             ])
             ++ (with pkgs.python313Packages; [
               rich

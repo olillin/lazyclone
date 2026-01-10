@@ -109,15 +109,15 @@ Install the package in your `configuration.nix` or an imported module:
 
 ### Arguments
 
-| Argument         | Type   | Description                                  | Example value       |
+| Argument | Type | Description | Example value |
 |------------------|--------|----------------------------------------------|---------------------|
-| `repo`           | string | Name or query of the repository to clone     | `olillin/lazyclone` |
-| `directory`      | string | Directory the repository should be cloned to | `lazyclone-2`       |
-| `-h`/`--help`    | flag   | Show the help menu                           |                     |
-| `-p`/`--program` | string | Program to open the cloned repository with   | `code`              |
-| `--host`         | string | URL for default git provider                 | `https://github.com`|
-| `--ssh`          | flag   | Prefer SSH over HTTPS                        |                     |
-| `--debug`        | flag   | Enable debug logs                            |                     |
+| `repo` | string | Name or query of the repository to clone | `olillin/lazyclone` |
+| `directory` | string | Directory the repository should be cloned to | `lazyclone-2` |
+| `-h`/`--help` | flag | Show the help menu | |
+| `-p`/`--program` | string | Program to open the cloned repository with | `code` |
+| `--host` | string | URL for default git provider | `https://github.com`|
+| `--ssh` | flag | Prefer SSH over HTTPS | |
+| `--debug` | flag | Enable debug logs | |
 
 ### Help message
 
